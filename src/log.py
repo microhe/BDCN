@@ -1,5 +1,6 @@
 import logging
 
+
 def get_logger(f='log.txt', mode='w'):
     logger = logging.getLogger('bdcn')
     logger.setLevel(logging.DEBUG)
@@ -18,6 +19,7 @@ def get_logger(f='log.txt', mode='w'):
     logger.addHandler(ch)
     logger.addHandler(fh)
     return logger
+
 
 if __name__ == '__main__':
     logger = get_logger()
