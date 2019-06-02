@@ -50,11 +50,13 @@ def test(model, args):
         t = F.sigmoid(out[-1]).cpu().data.numpy()[0, 0, :, :]
         if not os.path.exists(os.path.join(save_dir, 'fuse')):
             os.mkdir(os.path.join(save_dir, 'fuse'))
-        cv2.imwrite(os.path.join(save_dir, 'fuse', '%s.jpg'%nm[i]), 255-t*255)
+        cv2.imwrite(
+            os.path.join(save_dir, 'fuse', '%s.jpg' % nm[i]), 255 - t * 255)
         all_t += time.time() - t1
 
     print all_t
     print 'Overall Time use: ', time.time() - start_time
+
 
 def main():
     import time
@@ -62,39 +64,81 @@ def main():
     args = parse_args()
     args.bdcn = not args.no_bdcn
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    model = ablation.BDCN(ms=args.ms, block=args.block, bdcn=not args.no_bdcn,
-        direction=args.dir, k=args.num_conv, rate=args.rate)
+    model = ablation.BDCN(
+        ms=args.ms,
+        block=args.block,
+        bdcn=not args.no_bdcn,
+        direction=args.dir,
+        k=args.num_conv,
+        rate=args.rate)
     model.load_state_dict(torch.load('%s' % (args.model)))
 
     test(model, args)
 
+
 def parse_args():
     parser = argparse.ArgumentParser('test BDCN')
-    parser.add_argument('-d', '--dataset', type=str, choices=cfg.config_test.keys(),
-        default='bsds500', help='The dataset to train')
-    parser.add_argument('-c', '--cuda', action='store_true',
+    parser.add_argument(
+        '-d',
+        '--dataset',
+        type=str,
+        choices=cfg.config_test.keys(),
+        default='bsds500',
+        help='The dataset to train')
+    parser.add_argument(
+        '-c',
+        '--cuda',
+        action='store_true',
         help='whether use gpu to train network')
-    parser.add_argument('-g', '--gpu', type=str, default='0',
-        help='the gpu id to train net')
-    parser.add_argument('-m', '--model', type=str, default='params/bdcn_10000.pth',
+    parser.add_argument(
+        '-g', '--gpu', type=str, default='0', help='the gpu id to train net')
+    parser.add_argument(
+        '-m',
+        '--model',
+        type=str,
+        default='params/bdcn_10000.pth',
         help='the model to test')
-    parser.add_argument('--res-dir', type=str, default='result',
+    parser.add_argument(
+        '--res-dir',
+        type=str,
+        default='result',
         help='the dir to store result')
-    parser.add_argument('-k', type=int, default=1,
-        help='the k-th split set of multicue')
-    parser.add_argument('--ms', action='store_true', default=False,
+    parser.add_argument(
+        '-k', type=int, default=1, help='the k-th split set of multicue')
+    parser.add_argument(
+        '--ms',
+        action='store_true',
+        default=False,
         help='whether employ the ms blocks, default False')
-    parser.add_argument('--block', type=int, default=5,
+    parser.add_argument(
+        '--block',
+        type=int,
+        default=5,
         help='how many blocks of the model, default 5')
-    parser.add_argument('--no-bdcn', action='store_true', default=False,
+    parser.add_argument(
+        '--no-bdcn',
+        action='store_true',
+        default=False,
         help='whether to employ our policy to train the model, default False')
-    parser.add_argument('--dir', type=str, choices=['both', 's2d', 'd2s'], default='both',
+    parser.add_argument(
+        '--dir',
+        type=str,
+        choices=['both', 's2d', 'd2s'],
+        default='both',
         help='the direction of cascade, default both')
-    parser.add_argument('--num-conv', type=int, choices=[0,1,2,3,4], default=3,
+    parser.add_argument(
+        '--num-conv',
+        type=int,
+        choices=[0, 1, 2, 3, 4],
+        default=3,
         help='the number of convolution of SEB, default 3')
-    parser.add_argument('--rate', type=int, default=4,
+    parser.add_argument(
+        '--rate',
+        type=int,
+        default=4,
         help='the dilation rate of scale enhancement block, default 4')
     return parser.parse_args()
+
 
 if __name__ == '__main__':
     main()

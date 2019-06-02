@@ -4,8 +4,10 @@ import torchvision
 import torch.nn as nn
 import math
 
+
 class VGG16_C(nn.Module):
     """"""
+
     def __init__(self, pretrain=None, logger=None, block=5):
         super(VGG16_C, self).__init__()
         self.block = block
@@ -37,11 +39,14 @@ class VGG16_C(nn.Module):
             self.relu4_3 = nn.ReLU(inplace=True)
         if block >= 5:
             self.pool4 = nn.MaxPool2d(2, stride=1, ceil_mode=True)
-            self.conv5_1 = nn.Conv2d(512, 512, (3, 3), stride=1, padding=2, dilation=2)
+            self.conv5_1 = nn.Conv2d(
+                512, 512, (3, 3), stride=1, padding=2, dilation=2)
             self.relu5_1 = nn.ReLU(inplace=True)
-            self.conv5_2 = nn.Conv2d(512, 512, (3, 3), stride=1, padding=2, dilation=2)
+            self.conv5_2 = nn.Conv2d(
+                512, 512, (3, 3), stride=1, padding=2, dilation=2)
             self.relu5_2 = nn.ReLU(inplace=True)
-            self.conv5_3 = nn.Conv2d(512, 512, (3, 3), stride=1, padding=2, dilation=2)
+            self.conv5_3 = nn.Conv2d(
+                512, 512, (3, 3), stride=1, padding=2, dilation=2)
             self.relu5_3 = nn.ReLU(inplace=True)
         if pretrain:
             own_state_dict = self.state_dict()
@@ -49,7 +54,9 @@ class VGG16_C(nn.Module):
             for name, param in own_state_dict.items():
                 if name in state_dict:
                     if logger:
-                        logger.info('copy the weights of %s from pretrained model' % name)
+                        logger.info(
+                            'copy the weights of %s from pretrained model' %
+                            name)
                     param.copy_(state_dict[name])
                 else:
                     if logger:
@@ -97,8 +104,8 @@ class VGG16_C(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 if logger:
-                        logger.info('init the weights of %s from mean 0, std 0.01 gaussian distribution'\
-                         % m)
+                    logger.info('init the weights of %s from mean 0, std 0.01 gaussian distribution'\
+                     % m)
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 m.weight.data.normal_(0, math.sqrt(2. / n))
                 if m.bias is not None:
@@ -110,9 +117,8 @@ class VGG16_C(nn.Module):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
 
+
 if __name__ == '__main__':
     model = VGG16_C()
     # im = np.zeros((1,3,100,100))
     # out = model(Variable(torch.from_numpy(im)))
-
-

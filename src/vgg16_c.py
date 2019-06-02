@@ -4,8 +4,10 @@ import torchvision
 import torch.nn as nn
 import math
 
+
 class VGG16_C(nn.Module):
     """"""
+
     def __init__(self, pretrain=None, logger=None):
         super(VGG16_C, self).__init__()
         self.conv1_1 = nn.Conv2d(3, 64, (3, 3), stride=1, padding=1)
@@ -32,11 +34,14 @@ class VGG16_C(nn.Module):
         self.conv4_3 = nn.Conv2d(512, 512, (3, 3), stride=1, padding=1)
         self.relu4_3 = nn.ReLU(inplace=True)
         self.pool4 = nn.MaxPool2d(2, stride=1, ceil_mode=True)
-        self.conv5_1 = nn.Conv2d(512, 512, (3, 3), stride=1, padding=2, dilation=2)
+        self.conv5_1 = nn.Conv2d(
+            512, 512, (3, 3), stride=1, padding=2, dilation=2)
         self.relu5_1 = nn.ReLU(inplace=True)
-        self.conv5_2 = nn.Conv2d(512, 512, (3, 3), stride=1, padding=2, dilation=2)
+        self.conv5_2 = nn.Conv2d(
+            512, 512, (3, 3), stride=1, padding=2, dilation=2)
         self.relu5_2 = nn.ReLU(inplace=True)
-        self.conv5_3 = nn.Conv2d(512, 512, (3, 3), stride=1, padding=2, dilation=2)
+        self.conv5_3 = nn.Conv2d(
+            512, 512, (3, 3), stride=1, padding=2, dilation=2)
         self.relu5_3 = nn.ReLU(inplace=True)
         if pretrain:
             if '.npy' in pretrain:
@@ -49,7 +54,9 @@ class VGG16_C(nn.Module):
             for name, param in own_state_dict.items():
                 if name in state_dict:
                     if logger:
-                        logger.info('copy the weights of %s from pretrained model' % name)
+                        logger.info(
+                            'copy the weights of %s from pretrained model' %
+                            name)
                     param.copy_(state_dict[name])
                 else:
                     if logger:
@@ -82,17 +89,18 @@ class VGG16_C(nn.Module):
         conv5_2 = self.relu5_2(self.conv5_2(conv5_1))
         conv5_3 = self.relu5_3(self.conv5_3(conv5_2))
 
-        side = [conv1_1, conv1_2, conv2_1, conv2_2,
-                conv3_1, conv3_2, conv3_3, conv4_1,
-                conv4_2, conv4_3, conv5_1, conv5_2, conv5_3]
+        side = [
+            conv1_1, conv1_2, conv2_1, conv2_2, conv3_1, conv3_2, conv3_3,
+            conv4_1, conv4_2, conv4_3, conv5_1, conv5_2, conv5_3
+        ]
         return side
 
     def _initialize_weights(self, logger=None):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 if logger:
-                        logger.info('init the weights of %s from mean 0, std 0.01 gaussian distribution'\
-                         % m)
+                    logger.info('init the weights of %s from mean 0, std 0.01 gaussian distribution'\
+                     % m)
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 m.weight.data.normal_(0, math.sqrt(2. / n))
                 if m.bias is not None:
@@ -104,9 +112,8 @@ class VGG16_C(nn.Module):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
 
+
 if __name__ == '__main__':
     model = VGG16_C()
     # im = np.zeros((1,3,100,100))
     # out = model(Variable(torch.from_numpy(im)))
-
-

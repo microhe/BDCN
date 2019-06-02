@@ -4,12 +4,14 @@ import torch.nn as nn
 
 import vgg16_c
 
+
 def crop(data1, data2, crop_h, crop_w):
     _, _, h1, w1 = data1.size()
     _, _, h2, w2 = data2.size()
-    assert(h2 <= h1 and w2 <= w1)
-    data = data1[:, :, crop_h:crop_h+h2, crop_w:crop_w+w2]
+    assert (h2 <= h1 and w2 <= w1)
+    data = data1[:, :, crop_h:crop_h + h2, crop_w:crop_w + w2]
     return data
+
 
 def get_upsampling_weight(in_channels, out_channels, kernel_size):
     """Make a 2D bilinear kernel suitable for upsampling"""
@@ -26,6 +28,7 @@ def get_upsampling_weight(in_channels, out_channels, kernel_size):
     weight[range(in_channels), range(out_channels), :, :] = filt
     return torch.from_numpy(weight).float()
 
+
 class MSBlock(nn.Module):
     def __init__(self, c_in, rate=4):
         super(MSBlock, self).__init__()
@@ -34,14 +37,17 @@ class MSBlock(nn.Module):
 
         self.conv = nn.Conv2d(c_in, 32, 3, stride=1, padding=1)
         self.relu = nn.ReLU(inplace=True)
-        dilation = self.rate*1 if self.rate >= 1 else 1
-        self.conv1 = nn.Conv2d(32, 32, 3, stride=1, dilation=dilation, padding=dilation)
+        dilation = self.rate * 1 if self.rate >= 1 else 1
+        self.conv1 = nn.Conv2d(
+            32, 32, 3, stride=1, dilation=dilation, padding=dilation)
         self.relu1 = nn.ReLU(inplace=True)
-        dilation = self.rate*2 if self.rate >= 1 else 1
-        self.conv2 = nn.Conv2d(32, 32, 3, stride=1, dilation=dilation, padding=dilation)
+        dilation = self.rate * 2 if self.rate >= 1 else 1
+        self.conv2 = nn.Conv2d(
+            32, 32, 3, stride=1, dilation=dilation, padding=dilation)
         self.relu2 = nn.ReLU(inplace=True)
-        dilation = self.rate*3 if self.rate >= 1 else 1
-        self.conv3 = nn.Conv2d(32, 32, 3, stride=1, dilation=dilation, padding=dilation)
+        dilation = self.rate * 3 if self.rate >= 1 else 1
+        self.conv3 = nn.Conv2d(
+            32, 32, 3, stride=1, dilation=dilation, padding=dilation)
         self.relu3 = nn.ReLU(inplace=True)
 
         self._initialize_weights()
@@ -71,38 +77,38 @@ class BDCN(nn.Module):
         self.features = vgg16_c.VGG16_C(pretrain, logger)
         self.msblock1_1 = MSBlock(64, rate)
         self.msblock1_2 = MSBlock(64, rate)
-        self.conv1_1_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
-        self.conv1_2_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
+        self.conv1_1_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
+        self.conv1_2_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
         self.score_dsn1 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.score_dsn1_1 = nn.Conv2d(21, 1, 1, stride=1)
         self.msblock2_1 = MSBlock(128, rate)
         self.msblock2_2 = MSBlock(128, rate)
-        self.conv2_1_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
-        self.conv2_2_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
+        self.conv2_1_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
+        self.conv2_2_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
         self.score_dsn2 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.score_dsn2_1 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.msblock3_1 = MSBlock(256, rate)
         self.msblock3_2 = MSBlock(256, rate)
         self.msblock3_3 = MSBlock(256, rate)
-        self.conv3_1_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
-        self.conv3_2_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
-        self.conv3_3_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
+        self.conv3_1_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
+        self.conv3_2_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
+        self.conv3_3_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
         self.score_dsn3 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.score_dsn3_1 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.msblock4_1 = MSBlock(512, rate)
         self.msblock4_2 = MSBlock(512, rate)
         self.msblock4_3 = MSBlock(512, rate)
-        self.conv4_1_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
-        self.conv4_2_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
-        self.conv4_3_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
+        self.conv4_1_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
+        self.conv4_2_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
+        self.conv4_3_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
         self.score_dsn4 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.score_dsn4_1 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.msblock5_1 = MSBlock(512, rate)
         self.msblock5_2 = MSBlock(512, rate)
         self.msblock5_3 = MSBlock(512, rate)
-        self.conv5_1_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
-        self.conv5_2_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
-        self.conv5_3_down = nn.Conv2d(32*t, 21, (1, 1), stride=1)
+        self.conv5_1_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
+        self.conv5_2_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
+        self.conv5_3_down = nn.Conv2d(32 * t, 21, (1, 1), stride=1)
         self.score_dsn5 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.score_dsn5_1 = nn.Conv2d(21, 1, (1, 1), stride=1)
         self.upsample_2 = nn.ConvTranspose2d(1, 1, 4, stride=2, bias=False)
@@ -133,11 +139,11 @@ class BDCN(nn.Module):
             self.conv3_2_down(self.msblock3_2(features[5])) + \
             self.conv3_3_down(self.msblock3_3(features[6]))
         s3 = self.score_dsn3(sum3)
-        s3 =self.upsample_4(s3)
+        s3 = self.upsample_4(s3)
         # print(s3.data.shape)
         s3 = crop(s3, x, 2, 2)
         s31 = self.score_dsn3_1(sum3)
-        s31 =self.upsample_4(s31)
+        s31 = self.upsample_4(s31)
         # print(s31.data.shape)
         s31 = crop(s31, x, 2, 2)
         sum4 = self.conv4_1_down(self.msblock4_1(features[7])) + \
@@ -162,8 +168,10 @@ class BDCN(nn.Module):
         s51 = self.upsample_8_5(s51)
         # print(s51.data.shape)
         s51 = crop(s51, x, 0, 0)
-        o1, o2, o3, o4, o5 = s1.detach(), s2.detach(), s3.detach(), s4.detach(), s5.detach()
-        o11, o21, o31, o41, o51 = s11.detach(), s21.detach(), s31.detach(), s41.detach(), s51.detach()
+        o1, o2, o3, o4, o5 = s1.detach(), s2.detach(), s3.detach(), s4.detach(
+        ), s5.detach()
+        o11, o21, o31, o41, o51 = s11.detach(), s21.detach(), s31.detach(
+        ), s41.detach(), s51.detach()
         p1_1 = s1
         p2_1 = s2 + o1
         p3_1 = s3 + o2 + o1
@@ -175,9 +183,14 @@ class BDCN(nn.Module):
         p4_2 = s41 + o51
         p5_2 = s51
 
-        fuse = self.fuse(torch.cat([p1_1, p2_1, p3_1, p4_1, p5_1, p1_2, p2_2, p3_2, p4_2, p5_2], 1))
+        fuse = self.fuse(
+            torch.cat(
+                [p1_1, p2_1, p3_1, p4_1, p5_1, p1_2, p2_2, p3_2, p4_2, p5_2],
+                1))
 
-        return [p1_1, p2_1, p3_1, p4_1, p5_1, p1_2, p2_2, p3_2, p4_2, p5_2, fuse]
+        return [
+            p1_1, p2_1, p3_1, p4_1, p5_1, p1_2, p2_2, p3_2, p4_2, p5_2, fuse
+        ]
 
     def _initialize_weights(self, logger=None):
         for name, param in self.state_dict().items():
@@ -189,7 +202,7 @@ class BDCN(nn.Module):
                 if logger:
                     logger.info('init upsamle layer %s ' % name)
                 k = int(name.split('.')[0].split('_')[1])
-                param.copy_(get_upsampling_weight(1, 1, k*2))
+                param.copy_(get_upsampling_weight(1, 1, k * 2))
             elif 'fuse' in name:
                 if logger:
                     logger.info('init params %s ' % name)
@@ -206,10 +219,11 @@ class BDCN(nn.Module):
                     param.normal_(0, 0.01)
         # print self.conv1_1_down.weight
 
+
 if __name__ == '__main__':
     model = BDCN('./caffemodel2pytorch/vgg16.pth')
-    a=torch.rand((2,3,100,100))
-    a=torch.autograd.Variable(a)
+    a = torch.rand((2, 3, 100, 100))
+    a = torch.autograd.Variable(a)
     for x in model(a):
         print x.data.shape
     # for name, param in model.state_dict().items():
